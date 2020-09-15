@@ -8,11 +8,8 @@
 
 typedef struct process
 {    
-    struct process *prev;
     int p_id; 
 } process_t;
-
-process_t *previous;
 
 int nProc;
 
@@ -46,13 +43,10 @@ int main(int argc, char *argv[])
     process_t *aux = vector;
     process_t *final = vector + nProc; 
 
-    char witness;
+    char witness = 'T';
+    
 
-    previous = (process_t *) malloc(sizeof(process_t));
-    previous->prev = NULL;
-    previous->p_id = getpid();
-
-    for (; aux < final; ++aux)
+    while(aux < final)
     {        
         pid_t pId;                        
         int status;
@@ -67,29 +61,30 @@ int main(int argc, char *argv[])
             return -1;
         }
         else if (pId == 0)
-        {              
+        {
+            close(tubo[1]);
+            read(tubo[0], &witness, sizeof(char));
             aux->p_id = getpid();
-            aux->prev = previous;          
-            process_t *current = aux;  
-            // close(tubo[0]);
-            write(tubo[1], &current, sizeof(process_t));
-            printf("PREV: %d | PID: %d\n", aux->prev->p_id, aux->p_id);            
+            printf("—->Soy el proceso con PID %d y recibí el testigo %c, el cual tendré por 5 segundos. \n", aux->p_id, witness);
+            sleep(5);
 
+            printf("<—- Soy el proceso con PID %d  y acabo de enviar el testigo %c. \n", aux->p_id, witness);
+            close(tubo[0]);
+            write(tubo[1], &witness, sizeof(char));
+                      
             exit(0);
         } 
         else
         {
-            if (waitpid(pId, &status, 0) != -1)
-            {                
-                int a =WEXITSTATUS(status);
-                if (WIFEXITED(status))
-                {
-                    close(tubo[1]);
-                    read(tubo[0], &previous, sizeof(process_t));                    
-                }
-            }
+            close(tubo[1]);
+            read(tubo[0], &witness, sizeof(char));  
+            wait(&status);               
         }       
-    }              
+        ++aux;
+        // if(aux == final){
+        //     aux = vector;
+        // }
+    }          
 
 
     free(vector);
