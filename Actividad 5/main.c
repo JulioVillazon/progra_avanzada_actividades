@@ -45,52 +45,48 @@ int main(int argc, char *argv[])
 
     char witness = 'T';
 
-    int tubo[2*nProc];
-    pipe(tubo);
-    int n = 0;
+    int p1[2];
+    int p2[2];
+    pipe(p1);
 
     for(; aux < final; ++aux){
 
+        pipe(p2);
+        int status;
         pid_t pId;
         pId = fork();
-        int status;
-        int cycle = 0;
 
-        while (cycle < nProc)
+        if (pId == -1)
         {
-            if (pId == -1)
-            {
-                printf("Could not create child process\n");
-                return -1;
-            }
-            else if (pId == 0)
-            {
-
-                close(tubo[n+1]);
-                read(tubo[n], &witness, sizeof(char));
+            printf("Could not create child process\n");
+            return -1;
+        }
+        else if (pId == 0)
+        {
+                close(p1[1]);
+                read(p1[0], &witness, sizeof(char));
                 aux->p_id = getpid();
                 printf("—->Soy el proceso con PID %d y recibí el testigo %c, el cual tendré por 5 segundos. \n", aux->p_id, witness);
                 sleep(5);
 
-                n+=2 ;
-
                 printf("<—- Soy el proceso con PID %d  y acabo de enviar el testigo %c. \n", aux->p_id, witness);
-                close(tubo[n]);
-                write(tubo[n+1], &witness, sizeof(char));
-                exit(0);
-            }
-            else
-            {
-                ++cycle;
-                wait(&status);
-            }
+                close(p2[0]);
+                write(p2[1], &witness, sizeof(char));
+            
+          
+            exit(0);
+        }else{
+            close(p1[0]);
+            close(p1[1]);
+            p1[0] = p2[0];
+            p1[1] = p2[1];
+            wait(&status);
         }
+        
+        
     }
 
-           
-
-
     free(vector);
-    // free(previous);
+
     return 0;
 }
