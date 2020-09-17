@@ -1,6 +1,9 @@
 {
     "files.associations": {
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "atomic": "c",
+        "sstream": "c",
+        "cctype": "c"
     },
     "git.ignoreLimitWarning": true
 }
