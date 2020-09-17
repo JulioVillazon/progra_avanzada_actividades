@@ -63,19 +63,20 @@ int main(int argc, char *argv[])
         }
         else if (pId == 0)
         {
-                close(p1[1]);
-                read(p1[0], &witness, sizeof(char));
-                aux->p_id = getpid();
-                printf("—->Soy el proceso con PID %d y recibí el testigo %c, el cual tendré por 5 segundos. \n", aux->p_id, witness);
-                sleep(5);
+            close(p1[1]);
+            read(p1[0], &witness, sizeof(char));
+            aux->p_id = getpid();
+            printf("—->Soy el proceso con PID %d y recibí el testigo %c, el cual tendré por 5 segundos. \n", aux->p_id, witness);
+            sleep(5);
 
-                printf("<—- Soy el proceso con PID %d  y acabo de enviar el testigo %c. \n", aux->p_id, witness);
-                close(p2[0]);
-                write(p2[1], &witness, sizeof(char));
+            printf("<—- Soy el proceso con PID %d  y acabo de enviar el testigo %c. \n", aux->p_id, witness);
+            close(p2[0]);
+            write(p2[1], &witness, sizeof(char));
             
-          
             exit(0);
-        }else{
+        }
+        else
+        {
             close(p1[0]);
             close(p1[1]);
             p1[0] = p2[0];
