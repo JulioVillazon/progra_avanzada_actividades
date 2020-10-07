@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //Julio Villazón | A01370190 -> Trabajo hecho con Jesus Gonzalez
 //Jesus Gonzalez | A01422050 -> Trabajo hecho con Julio Villazón
 
@@ -8,12 +9,15 @@ El primer cliente debe ser inicializado con la opcion de -m (master)
 Al indicarle a cada cliente el PID del vecino, el cliente inicializado como master debe recivir el PID del vecino como ultimo.
 */
 
+=======
+>>>>>>> master
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
+<<<<<<< HEAD
 #include <signal.h>
 
 #define TCP_PORT 8000
@@ -79,10 +83,44 @@ int main(int argc, char * argv[])
     escritos = connect(client, (struct sockaddr *) &direccion, sizeof(direccion));
 
     if (escritos == 0)  {
+=======
+
+#define TCP_PORT 8000
+
+int main(int argc, const char *argv[])
+{
+    struct sockaddr_in direccion;
+
+    char buffer[1000];
+
+    int cliente;
+
+    ssize_t leidos, escritos;
+
+    if (argc != 2)
+    {
+        printf("Use: %s IP_Servidor \n", argv[0]);
+        exit(-1);
+    }
+
+    // Crear el socket
+    cliente = socket(PF_INET, SOCK_STREAM, 0);
+
+    // Establecer conexión
+    inet_aton(argv[1], &direccion.sin_addr);
+    direccion.sin_port = htons(TCP_PORT);
+    direccion.sin_family = AF_INET;
+
+    escritos = connect(cliente, (struct sockaddr *)&direccion, sizeof(direccion));
+
+    if (escritos == 0)
+    {
+>>>>>>> master
         printf("Conectado a %s:%d \n",
                inet_ntoa(direccion.sin_addr),
                ntohs(direccion.sin_port));
 
+<<<<<<< HEAD
         printf("PID del cliente -> %d\n", getpid());
         printf("Ingresar el PID del cliente vecino: ");
         scanf("%d", &neighborPID);
@@ -117,10 +155,21 @@ int main(int argc, char * argv[])
                     }
                 }
             }
+=======
+        // Escribir datos en el socket
+        while ((leidos = read(fileno(stdin), &buffer, sizeof(buffer))))
+        {
+            write(cliente, &buffer, leidos);
+
+            /* Lee del buffer y escribe en pantalla */
+            leidos = read(cliente, &buffer, sizeof(buffer));
+            write(fileno(stdout), &buffer, leidos);
+>>>>>>> master
         }
     }
 
     // Cerrar sockets
+<<<<<<< HEAD
     close(client);
     
     return 0;
@@ -147,3 +196,9 @@ void gestor(int signal)
     alarm(8);
     sigaction(SIGALRM, &senal, 0);
 }
+=======
+    close(cliente);
+
+    return 0;
+}
+>>>>>>> master
