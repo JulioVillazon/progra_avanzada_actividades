@@ -11,17 +11,21 @@
 #include <ftw.h>
 #include <fcntl.h>
 
+int grabar = 0;
+
 int searchDir(char *);
 int rmrf(char *);
 int unlink_cb(const char *, const struct stat *, int, struct FTW *);
 void gestor(int);
 int main(int argc, char *argv[])
+
 {
     sigset_t conjunto, pendientes;
+    struct sigaction senal;
     char path[256], pathFile[256];
     char *nopt, *topt;
     int nArc, tempo;
-    int cmd, iFd;
+    int cmd, iFd, sz;
 
     while ((cmd = getopt(argc, argv, "n:t:")) != -1)
         switch (cmd)
@@ -53,7 +57,7 @@ int main(int argc, char *argv[])
     //Bloquar señañles menos SIGALARM
     sigemptyset(&conjunto);
 
-    // sigaddset(&conjunto, SIGHUP);sigaddset(&conjunto, SIGINT);sigaddset(&conjunto, SIGQUIT);
+    sigaddset(&conjunto, SIGHUP);sigaddset(&conjunto, SIGINT);sigaddset(&conjunto, SIGQUIT);
     sigaddset(&conjunto, SIGILL);sigaddset(&conjunto, SIGTRAP);sigaddset(&conjunto, SIGABRT);
     sigaddset(&conjunto, SIGIOT);sigaddset(&conjunto, SIGEMT);sigaddset(&conjunto, SIGFPE);
     sigaddset(&conjunto, SIGKILL);sigaddset(&conjunto, SIGBUS);sigaddset(&conjunto, SIGSEGV);
@@ -73,26 +77,39 @@ int main(int argc, char *argv[])
     searchDir(path);
 
     //gestor SIGALARM
-    signal(SIGALRM, gestor);
+    senal.sa_handler = gestor;
+    sigaction(SIGALRM, &senal, 0);
     
     //Ciclo crear a0, a1....an ()
     for (int i = 0; i < nArc; ++i)
     {
-        sprintf(pathFile, "%s/a%d.txt\n", path, i);
+        sprintf(pathFile, "%s/a%d.txt", path, i);
         iFd = creat(pathFile, 0644);
-    }
-        //Abrir a0, y una vez que termina abrir el a1 y asi sucesivamente
-            //Establecer un temporizador t
-            //Escribir en el archivo "X" mientra grabar valga 1
-            //Cuanod el temporizador termine cambiar grabar a 0
-            //Escribir en el archivp las señales que recibio y las pendientes
-            //Volver a empezar el ciclo
 
+        //Abrir an
+        iFd = open(pathFile, O_RDWR, 0);
+
+        //Establecer un temporizador t
+        alarm(tempo);
+
+        //Escribir en el archivo "X" mientra grabar valga 1
+        grabar = 1;
+        while(grabar){
+            sz = write(iFd, "X\n", strlen("X"));
+        }
+
+        sigpending(&pendientes);
+
+        if (sigismember(&pendientes, SIGINT))
+            sz = write(iFd, "Ctrl+C\n", strlen("Ctrl+C"));
+        if (sigismember(&pendientes, SIGTSTP))
+            sz = write(iFd, "Ctrl+Z\n", strlen("Ctrl+Z"));
+
+        //Escribir en el archivp las señales que recibio y las pendientes
+        close(iFd);
+    }
 
     //Listar archivos creados y su tamaño
-
-
-    
 
     return 0;
 }
@@ -129,5 +146,6 @@ int rmrf(char *path)
 
 void gestor(int s)
 {
-    printf("Mi alarma se generó hace 10 seg pero estaba bloqueada. Ya pasaron 20 seg.");
+    //Cuanod el temporizador termine cambiar grabar a 0
+    grabar = 0;
 }
