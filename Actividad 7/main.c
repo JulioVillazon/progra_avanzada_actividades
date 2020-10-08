@@ -9,21 +9,19 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <ftw.h>
+#include <fcntl.h>
 
-
-int traverseDirectoryTree(char *);
-int isDir(const char *);
-void createDir();
+int searchDir(char *);
 int rmrf(char *);
 int unlink_cb(const char *, const struct stat *, int, struct FTW *);
 void gestor(int);
 int main(int argc, char *argv[])
 {
     sigset_t conjunto, pendientes;
-    char path[256];
+    char path[256], pathFile[256];
     char *nopt, *topt;
     int nArc, tempo;
-    int cmd, exist;
+    int cmd, iFd;
 
     while ((cmd = getopt(argc, argv, "n:t:")) != -1)
         switch (cmd)
@@ -72,14 +70,17 @@ int main(int argc, char *argv[])
     //Checar acrchivo
     printf("Ingrese el nombre del archivo a buscar: ");
     scanf("%s", path);
-    traverseDirectoryTree(path);
+    searchDir(path);
 
     //gestor SIGALARM
     signal(SIGALRM, gestor);
-
-
+    
     //Ciclo crear a0, a1....an ()
-
+    for (int i = 0; i < nArc; ++i)
+    {
+        sprintf(pathFile, "%s/a%d.txt\n", path, i);
+        iFd = creat(pathFile, 0644);
+    }
         //Abrir a0, y una vez que termina abrir el a1 y asi sucesivamente
             //Establecer un temporizador t
             //Escribir en el archivo "X" mientra grabar valga 1
@@ -96,56 +97,19 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-int traverseDirectoryTree(char *path)
+int searchDir(char *path)
 {
-    DIR *d;
-    struct dirent *dir;
-    int exists;
+    struct stat st = {0};
 
-
-    d = opendir(path);
-    if (d)
+    if (stat(path, &st) == -1)
     {
-        while ((dir = readdir(d)) != NULL)
-        {
-            char *currentPath = realpath(dir->d_name, NULL);
-            if (isDir(currentPath))
-            {
-                rmrf(path);
-                createDir();
-            }
-            else
-            {
-                createDir();
-            }
-        }
-        closedir(d);
+        mkdir(path, 0700);
     }
-}
-
-int isDir(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISDIR(path_stat.st_mode);
-}
-
-void createDir()
-{
-    int check;
-    char *dirname = "datos";
-
-    printf("Directory created\n");
-    check = mkdir(dirname, 0777);
-    //checking if directory is created
-    if (!check)
-        printf("Directory created\n");
     else
     {
-        printf("Unable to create directory\n");
-        exit(1);
+        rmrf(path);
+        mkdir(path, 0700);
     }
-    system("dir/p");
 }
 
 int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
