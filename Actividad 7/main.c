@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
             sz = write(iFd, "X\n", strlen("X"));
         }
 
+        //Escribir en el archivp las señales que recibio y las pendientes
         sigpending(&pendientes);
 
         if (sigismember(&pendientes, SIGINT))
@@ -105,7 +106,6 @@ int main(int argc, char *argv[])
         if (sigismember(&pendientes, SIGTSTP))
             sz = write(iFd, "Ctrl+Z\n", strlen("Ctrl+Z"));
 
-        //Escribir en el archivp las señales que recibio y las pendientes
         close(iFd);
     }
 
