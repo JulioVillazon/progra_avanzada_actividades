@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 //Julio Villazón | A01370190 -> Trabajo hecho con Jesus Gonzalez
 //Jesus Gonzalez | A01422050 -> Trabajo hecho con Julio Villazón
 
@@ -9,20 +8,15 @@ El primer cliente debe ser inicializado con la opcion de -m (master)
 Al indicarle a cada cliente el PID del vecino, el cliente inicializado como master debe recivir el PID del vecino como ultimo.
 */
 
-=======
->>>>>>> master
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
-<<<<<<< HEAD
 #include <signal.h>
 
 #define TCP_PORT 8000
-
-
 
 int id;
 
@@ -34,8 +28,8 @@ char previousStatus;
 void gestorAlarma(int);
 void gestor(int);
 
-int main(int argc, char * argv[]) 
-{    
+int main(int argc, char *argv[])
+{
     struct sigaction senal;
 
     senal.sa_handler = gestor;
@@ -54,13 +48,15 @@ int main(int argc, char * argv[])
 
     ssize_t leidos, escritos;
 
-    while ((opc = getopt(argc, argv, "m")) != -1) {
-        switch (opc) {
-            case 'm':
-                master = 1;
-                break;
-            default:
-                abort();
+    while ((opc = getopt(argc, argv, "m")) != -1)
+    {
+        switch (opc)
+        {
+        case 'm':
+            master = 1;
+            break;
+        default:
+            abort();
         }
     }
 
@@ -69,10 +65,11 @@ int main(int argc, char * argv[])
     id = client;
 
     // Establecer conexión
-    if (master == 1) 
+    if (master == 1)
     {
         inet_aton(argv[2], &direccion.sin_addr);
-    } else 
+    }
+    else
     {
         inet_aton(argv[1], &direccion.sin_addr);
     }
@@ -80,64 +77,35 @@ int main(int argc, char * argv[])
     direccion.sin_port = htons(TCP_PORT);
     direccion.sin_family = AF_INET;
 
-    escritos = connect(client, (struct sockaddr *) &direccion, sizeof(direccion));
-
-    if (escritos == 0)  {
-=======
-
-#define TCP_PORT 8000
-
-int main(int argc, const char *argv[])
-{
-    struct sockaddr_in direccion;
-
-    char buffer[1000];
-
-    int cliente;
-
-    ssize_t leidos, escritos;
-
-    if (argc != 2)
-    {
-        printf("Use: %s IP_Servidor \n", argv[0]);
-        exit(-1);
-    }
-
-    // Crear el socket
-    cliente = socket(PF_INET, SOCK_STREAM, 0);
-
-    // Establecer conexión
-    inet_aton(argv[1], &direccion.sin_addr);
-    direccion.sin_port = htons(TCP_PORT);
-    direccion.sin_family = AF_INET;
-
-    escritos = connect(cliente, (struct sockaddr *)&direccion, sizeof(direccion));
+    escritos = connect(client, (struct sockaddr *)&direccion, sizeof(direccion));
 
     if (escritos == 0)
     {
->>>>>>> master
         printf("Conectado a %s:%d \n",
                inet_ntoa(direccion.sin_addr),
                ntohs(direccion.sin_port));
 
-<<<<<<< HEAD
         printf("PID del cliente -> %d\n", getpid());
         printf("Ingresar el PID del cliente vecino: ");
         scanf("%d", &neighborPID);
         printf("Enlazado con el cliente -> PID %d\n", neighborPID);
-        
-        if (master == 1) 
+
+        if (master == 1)
         {
             printf("Color: %c\n", currentStatus);
             kill(neighborPID, SIGUSR1);
             master = 0;
         }
         // Escribir datos en el socket
-        while ((leidos = read(client, &buffer, sizeof(buffer)))) {
-            if (leidos == 1) { 
-                if (tipoSenal != buffer) {
+        while ((leidos = read(client, &buffer, sizeof(buffer))))
+        {
+            if (leidos == 1)
+            {
+                if (tipoSenal != buffer)
+                {
                     tipoSenal = buffer;
-                    if (flag == 0) {
+                    if (flag == 0)
+                    {
                         previousStatus = currentStatus;
                         flag = 1;
                     }
@@ -145,37 +113,30 @@ int main(int argc, const char *argv[])
                     printf("Color: %c\n", currentStatus);
                     write(id, &currentStatus, sizeof(char));
                     alarm(0);
-                } else {
+                }
+                else
+                {
                     tipoSenal = '\0';
                     currentStatus = previousStatus;
                     flag = 0;
-                    if (currentStatus == 'V') {
+                    if (currentStatus == 'V')
+                    {
                         printf("\nClientes reestablecidos\n\n");
                         raise(SIGUSR1);
                     }
                 }
             }
-=======
-        // Escribir datos en el socket
-        while ((leidos = read(fileno(stdin), &buffer, sizeof(buffer))))
-        {
-            write(cliente, &buffer, leidos);
-
-            /* Lee del buffer y escribe en pantalla */
-            leidos = read(cliente, &buffer, sizeof(buffer));
-            write(fileno(stdout), &buffer, leidos);
->>>>>>> master
         }
     }
 
     // Cerrar sockets
-<<<<<<< HEAD
     close(client);
-    
+
     return 0;
 }
 
-void gestorAlarma(int signal) {
+void gestorAlarma(int signal)
+{
     kill(neighborPID, SIGUSR1);
     currentStatus = 'R';
 
@@ -183,11 +144,11 @@ void gestorAlarma(int signal) {
     write(id, &currentStatus, sizeof(char));
 }
 
-void gestor(int signal) 
+void gestor(int signal)
 {
     struct sigaction senal;
 
-    senal.sa_handler = gestorAlarma;       
+    senal.sa_handler = gestorAlarma;
 
     currentStatus = 'V';
     printf("Color: %c\n", currentStatus);
@@ -196,9 +157,3 @@ void gestor(int signal)
     alarm(8);
     sigaction(SIGALRM, &senal, 0);
 }
-=======
-    close(cliente);
-
-    return 0;
-}
->>>>>>> master
