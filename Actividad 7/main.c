@@ -1,3 +1,6 @@
+//Julio Villazón | A01370190 -> Trabajo hecho con Jesus Gonzalez
+//Jesus Gonzalez | A01422050 -> Trabajo hecho con Julio Villazón
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,11 +20,14 @@ int searchDir(char *);
 int rmrf(char *);
 int unlink_cb(const char *, const struct stat *, int, struct FTW *);
 void gestor(int);
-int main(int argc, char *argv[])
+void traverseDirectoryTree(char *);
+int get_file_size(const char *);
 
+int main(int argc, char *argv[])
 {
     sigset_t conjunto, pendientes;
     struct sigaction senal;
+    struct dirent *dir;
     char path[256], pathFile[256];
     char *nopt, *topt;
     int nArc, tempo;
@@ -107,9 +113,8 @@ int main(int argc, char *argv[])
             sz = write(iFd, "Ctrl+Z\n", strlen("Ctrl+Z"));
 
         close(iFd);
+        
     }
-
-    //Listar archivos creados y su tamaño
 
     return 0;
 }

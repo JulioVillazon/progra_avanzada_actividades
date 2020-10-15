@@ -3,7 +3,10 @@
         "cstdlib": "cpp",
         "atomic": "c",
         "sstream": "c",
-        "cctype": "c"
+        "cctype": "c",
+        "__locale": "c",
+        "locale": "c",
+        "thread": "c"
     },
     "git.ignoreLimitWarning": true
 }
