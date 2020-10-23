@@ -92,7 +92,11 @@ void * mujer_quiere_entrar(void *arg){
         {
             --waiting_women;
             printf("(M) Entra una mujer (%d en espera).\n", waiting_women);
-            sem_post(women);
+            #ifdef __APPLE__
+                sem_post(women);
+            #else
+                sem_post(&women);
+            #endif
         }
         pthread_mutex_unlock(&mutex_toilet);
 
@@ -110,11 +114,16 @@ void *mujer_sale(void *arg)
     while (arrivedwomen < WOMEN)
     {
         sleep(rand() % 3);
-        sem_wait(women);
-        sem_getvalue(women, &women_inside);
+        #ifdef __APPLE__
+            sem_wait(women);
+            sem_getvalue(women, &women_inside);
+        #else
+            sem_wait(&women);
+            sem_getvalue(&women, &women_inside);
+        #endif
         //Parece que el sem_getvalue al igual que el sem_init y el sem_destroy no funcionan en MACOS
         //Y es por eso que no regres el valor de 0 con el el que wome_inside fue declarado siempre
-        //Es por eso que solo sale una mujer y se vacia el baño.
+        //Es por eso que solo sale una mujer y se vacia el baño. No encontramos un sustituto para sem_getvalue
 
         printf("(M) Sale una mujer.\n");
 
@@ -152,7 +161,12 @@ void * hombre_quiere_entrar(void *arg){
         {
             --waiting_men;
             printf("(H) Entra un hombre (%d en espera).\n", waiting_men);
-            sem_post(men);
+            #ifdef __APPLE__
+                sem_post(men);
+            #else
+                sem_post(&men);
+            #endif
+            
         }
         pthread_mutex_unlock(&mutex_toilet);
         ++arrivedmen;
@@ -168,23 +182,29 @@ void * hombre_sale(void *arg)
     while (arrivedmen < MEN)
     {
         sleep(rand() % 3);
-        sem_wait(men);
-        sem_getvalue(men, &men_inside);
-        //Parece que el sem_getvalue al igual que el sem_init y el sem_destroy no funcionan en MACOS
-        //Y es por eso que no regres el valor de 0 con el el que men_inside fue declarado siempre
-        //Es por eso que solo sale un hombre y se vacia el baño.
 
-        //printf("Hay %d hombres adentro\n", men_inside);
+        #ifdef __APPLE__
+            sem_wait(men);
+            sem_getvalue(men, &men_inside);
+        #else
+            sem_wait(&men);
+            sem_getvalue(&men, &men_inside);
+        #endif
 
-        printf("(H) Sale un hombre.\n");
+            //Parece que el sem_getvalue al igual que el sem_init y el sem_destroy no funcionan en MACOS
+            //Y es por eso que no regres el valor de 0 con el el que men_inside fue declarado siempre
+            //Es por eso que solo sale un hombre y se vacia el baño. No encontramos un sustituto para sem_getvalue
 
+            //printf("Hay %d hombres adentro\n", men_inside);
 
-        if (men_inside == 0)
-        {
-            pthread_mutex_lock(&mutex_toilet);
-            toilet_state = 0;
-            printf("El baño esta vacío.\n");
-            pthread_mutex_unlock(&mutex_toilet);
+            printf("(H) Sale un hombre.\n");
+
+            if (men_inside == 0)
+            {
+                pthread_mutex_lock(&mutex_toilet);
+                toilet_state = 0;
+                printf("El baño esta vacío.\n");
+                pthread_mutex_unlock(&mutex_toilet);
         }
     }
 
