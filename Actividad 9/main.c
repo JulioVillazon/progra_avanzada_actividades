@@ -122,7 +122,7 @@ void *mujer_sale(void *arg)
             sem_getvalue(&women, &women_inside);
         #endif
         //Parece que el sem_getvalue al igual que el sem_init y el sem_destroy no funcionan en MACOS
-        //Y es por eso que no regres el valor de 0 con el el que wome_inside fue declarado siempre
+        //Y es por eso que nos regresa el valor de 0 con el el que wome_inside fue declarado siempre
         //Es por eso que solo sale una mujer y se vacia el baño. No encontramos un sustituto para sem_getvalue
 
         printf("(M) Sale una mujer.\n");
@@ -192,7 +192,7 @@ void * hombre_sale(void *arg)
         #endif
 
             //Parece que el sem_getvalue al igual que el sem_init y el sem_destroy no funcionan en MACOS
-            //Y es por eso que no regres el valor de 0 con el el que men_inside fue declarado siempre
+            //Y es por eso que nos regresa el valor de 0 con el el que men_inside fue declarado siempre
             //Es por eso que solo sale un hombre y se vacia el baño. No encontramos un sustituto para sem_getvalue
 
             //printf("Hay %d hombres adentro\n", men_inside);
