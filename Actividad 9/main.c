@@ -22,6 +22,8 @@ sem_t men, women;
 int toilet_state = 0;
 int arrivedwomen = 0;
 int arrivedmen = 0;
+int exitedmen = 0;
+int exitedwoman = 0;
 
 void *mujer_quiere_entrar(void *);
 void *hombre_quiere_entrar(void *);
@@ -111,7 +113,7 @@ void *mujer_sale(void *arg)
 {
     int women_inside = 0;
 
-    while (arrivedwomen < WOMEN)
+    while (exitedwoman < WOMEN)
     {
         sleep(rand() % 3);
         #ifdef __APPLE__
@@ -133,6 +135,7 @@ void *mujer_sale(void *arg)
             printf("El baño esta vacío.\n");
             pthread_mutex_unlock(&mutex_toilet);
         }
+        ++exitedwoman;
         
     }
 
@@ -179,7 +182,7 @@ void * hombre_quiere_entrar(void *arg){
 void * hombre_sale(void *arg)
 {
     int men_inside = 0;
-    while (arrivedmen < MEN)
+    while (exitedmen < MEN)
     {
         sleep(rand() % 3);
 
@@ -206,6 +209,7 @@ void * hombre_sale(void *arg)
                 printf("El baño esta vacío.\n");
                 pthread_mutex_unlock(&mutex_toilet);
         }
+        ++exitedwoman;
     }
 
     pthread_exit(NULL);
