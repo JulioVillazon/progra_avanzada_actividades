@@ -22,8 +22,6 @@ sem_t men, women;
 int toilet_state = 0;
 int arrivedwomen = 0;
 int arrivedmen = 0;
-int exitedmen = 0;
-int exitedwoman = 0;
 
 void *mujer_quiere_entrar(void *);
 void *hombre_quiere_entrar(void *);
@@ -37,8 +35,8 @@ int main(int argc, const char *argv[])
 
     #ifdef __APPLE__
         /* Para MacOS */
-        men = sem_open("men", O_CREAT, 777, MEN/2);
-        women = sem_open("women", O_CREAT, 777, WOMEN/2);
+        men = sem_open("men", O_CREAT, 777, 0);
+        women = sem_open("women", O_CREAT, 777, 0);
     #else
         /* Inicializar semáforos en Linux */
         sem_init(&men, 0, 0);
@@ -113,7 +111,7 @@ void *mujer_sale(void *arg)
 {
     int women_inside = 0;
 
-    while (exitedwoman < WOMEN)
+    while (arrivedwomen < WOMEN)
     {
         sleep(rand() % 3);
         #ifdef __APPLE__
@@ -135,7 +133,6 @@ void *mujer_sale(void *arg)
             printf("El baño esta vacío.\n");
             pthread_mutex_unlock(&mutex_toilet);
         }
-        ++exitedwoman;
         
     }
 
@@ -182,7 +179,7 @@ void * hombre_quiere_entrar(void *arg){
 void * hombre_sale(void *arg)
 {
     int men_inside = 0;
-    while (exitedmen < MEN)
+    while (arrivedmen < MEN)
     {
         sleep(rand() % 3);
 
@@ -209,7 +206,7 @@ void * hombre_sale(void *arg)
                 printf("El baño esta vacío.\n");
                 pthread_mutex_unlock(&mutex_toilet);
         }
-        ++exitedwoman;
+
     }
 
     pthread_exit(NULL);
