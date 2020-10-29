@@ -14,15 +14,13 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #ifdef __APPLE__
 /* Para MacOS */
-sem_t *chair, *food;
+sem_t *chair, turn;
 #else
 /* Para Linux */
-sem_t chair, food;
+sem_t chair, turn;
 #endif
 
 int dwarfs_waiting = 0;
-//Blancanieves tiene 2 estados 0 = dando una vuelta, 1 = sirviendo
-int snowwhite_state = 0;
 
 void *snowhite(void *);
 void *dwarf(void *);
@@ -39,20 +37,20 @@ int main(int argc, const char *argv[])
 #else
     /* Inicializar semáforos en Linux */
     sem_init(&chair, 0, CHAIRS);
-    sem_init(&food, 0, 0);
+    sem_init(&turn, 0, 0);
 #endif
 
     /* Crear a los babuinos */
     pthread_t threads[THREADS];
 
-    //Creando hilo de blancanieves
-    pthread_create(&threads[0], NULL, snowhite, NULL);
-
     //Creando hilo de enanitos
-    for (int i = 1; i <= DWARFS; ++i)
+    for (int i = 0; i < DWARFS; ++i)
     {
-        pthread_create(&threads[i], NULL, dwarf, NULL);
+        pthread_create(&threads[i], NULL, dwarf, (void *)&i);
     }
+
+     //Creando hilo de blancanieves
+    pthread_create(&threads[DWARFS+1], NULL, snowhite, NULL);
 
     /* Adjuntar los hilos */
     for (int i = 0; i < THREADS; ++i)
@@ -67,7 +65,7 @@ int main(int argc, const char *argv[])
     #else
         /* Liberar los recursos en Linux */
         sem_destroy(&chair);
-        sem_destroy(&food);
+        sem_destroy(&turn);
     #endif
 
     pthread_exit(NULL);
@@ -75,66 +73,30 @@ int main(int argc, const char *argv[])
 
 void *dwarf(void *arg)
 {
-    int available_chairs;
-    int total_dwarfs = 0;
-    int eating;
+    int ndwarf = *(int *)arg;
 
-    #ifdef __APPLE__
-        /* Para MacOS */
-        sem_getvalue(chair, &available_chairs);
-        sem_getvalue(food, &eating);
-    #else
-        /* Inicializar semáforos en Linux */
-        sem_getvalue(&chair, &available_chairs);
-        sem_getvalue(&food, &eating);
-    #endif
+    while (1)
+    {     
+        sleep(rand()%3);
 
-    while (total_dwarfs < DWARFS)
-    {
-        sleep(rand() % 5);
+        printf("-->(Enanito %d) Regreso el enanito y este esperando una silla. \n", ndwarf);
+        sem_wait(&chair);
+        printf("(Enanito %d) Ya esta sentado. \n", ndwarf);
 
-        printf("(E) Regreso un enanito.\n");
+        pthread_mutex_lock(&mutex);
         ++dwarfs_waiting;
-        ++total_dwarfs;
+        pthread_mutex_unlock(&mutex);
 
+        sem_wait(&turn);
 
-        if(available_chairs > 0){
-            #ifdef __APPLE__
-                /* Para MacOS */
-                sem_wait(chair);
-                sem_getvalue(chair, &available_chairs);
-            #else
-                /* Inicializar semáforos en Linux */
-                sem_wait(&chair);
-                sem_getvalue(&chair, &available_chairs);
-            #endif
+        pthread_mutex_lock(&mutex);
+        --dwarfs_waiting;
+        pthread_mutex_unlock(&mutex);
 
-            printf("(E) Se sento un enanito (%d sillas disponibles) \n", available_chairs);
-            if (dwarfs_waiting > 0)
-            {
-                --dwarfs_waiting;
-            }
-            snowwhite_state = 1;
- 
-        }
-        else{
-            printf("(E) Las sillas estan ocupadas. (%d enanitos esperando) \n", dwarfs_waiting);
-        }
+        printf("(Enanito %d) Ya esta comiendo. \n", ndwarf);
+        printf("(Enanito %d) Ya acabo de comer y va a regresar a la mina --> \n", ndwarf);
 
-        // pthread_mutex_unlock (&mutex);
-
-        if (eating > 0)
-        {
-            #ifdef __APPLE__
-                /* Para MacOS */
-                sem_wait(food);
-                sem_getvalue(food, &eating);
-            #else
-                /* Inicializar semáforos en Linux */
-                sem_wait(&food);
-                sem_getvalue(&food, &eating);
-            #endif
-        }
+        sem_post(&chair);
     }
 
     pthread_exit(NULL);
@@ -142,6 +104,23 @@ void *dwarf(void *arg)
 
 void *snowhite(void *arg)
 {
-    
+    while(1){
+
+        sleep(rand()%3);
+
+        pthread_mutex_lock(&mutex);
+
+        if(dwarfs_waiting == 0){
+            pthread_mutex_unlock(&mutex);
+            printf("Blancanieves se va dar una vuelta \n");
+        }else{
+            pthread_mutex_unlock(&mutex);
+            printf("Blancanieves le sirve la comida a un enanito\n");
+            sem_post(&turn);
+        }
+    }
+
+    pthread_exit(NULL);
+
 }
 
