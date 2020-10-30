@@ -28,7 +28,7 @@ int main(int argc, const char *argv[]) {
 
     for(; aux < final; ++aux)
     {
-        pthread_create(aux, NULL, move, (void *) count);
+        pthread_create(aux, NULL, move, (void *)&count);
         ++count;
     }
     aux = robots;    
@@ -51,12 +51,12 @@ void *move(void *count){
         if(sections[currentSec] + R_WEIGHT < MAX_S_WEIGHT) //weight check
         {
             sections[currentSec] += R_WEIGHT; //new robot in section
-            printf("New robot in section %d. New weight: %d", currentSec, sections[currentSec]);
+            printf("New robot in section %d. New weight: %d\n", currentSec, sections[currentSec]);
             pthread_mutex_unlock(&in); //unlock
             sleep(rand()%3);
             pthread_mutex_lock(&out); //lock
             sections[currentSec] -= R_WEIGHT; //remove robot from previous section
-            printf("Robot has left section %d. New weight: %d", currentSec, sections[currentSec]);
+            printf("Robot has left section %d. New weight: %d\n", currentSec, sections[currentSec]);
             pthread_mutex_unlock(&out); //unlock
             currentSec++;
         }
